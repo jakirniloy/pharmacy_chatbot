@@ -1,0 +1,256 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare Pharmacy Assistant | AI Health & Medication Guide</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Marked.js for fast Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <!-- DOMPurify for XSS protection -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <!-- Ambient Background Lighting Orbs -->
+    <div class="ambient-glow glow-top-left"></div>
+    <div class="ambient-glow glow-bottom-right"></div>
+    <div class="ambient-glow glow-center"></div>
+
+    <div class="app-wrapper">
+        <!-- HEADER -->
+        <header class="chat-header">
+            <div class="header-left">
+                <div class="logo-box">
+                    <div class="cross-badge">
+                        <i class="fa-solid fa-notes-medical"></i>
+                    </div>
+                    <span class="online-pulse" title="System Live & Ready"></span>
+                </div>
+                <div class="header-info">
+                    <div class="title-row">
+                        <h1>MediCare <span class="accent-gradient">Pharmacy</span></h1>
+                        <span class="badge-status">
+                            <span class="dot-live"></span> AI Assistant
+                        </span>
+                    </div>
+                    <p class="subtitle">Clinical Medication Guide & Pharmacological Safety</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button id="soundToggleBtn" class="btn-action sound-btn" title="Toggle Typing Sounds">
+                    <i class="fa-solid fa-volume-xmark" id="soundIcon"></i>
+                    <span class="btn-text-desktop">Sound</span>
+                </button>
+
+                <button id="emergencyBtn" class="btn-action emergency-btn" title="View Emergency Protocols">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Emergency Warning</span>
+                </button>
+
+                <button id="themeToggleBtn" class="btn-action icon-btn" title="Toggle Light/Dark Theme">
+                    <i class="fa-solid fa-moon" id="themeIcon"></i>
+                </button>
+
+                <button id="clearChatBtn" class="btn-action reset-btn" title="Start New Consultation">
+                    <i class="fa-solid fa-arrow-rotate-right"></i>
+                    <span class="btn-text-desktop">New Chat</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- EMERGENCY BANNER MODAL -->
+        <div id="emergencyModal" class="modal-overlay hidden">
+            <div class="modal-card">
+                <div class="modal-header emergency-modal-header">
+                    <div class="modal-icon-alert">
+                        <i class="fa-solid fa-kit-medical"></i>
+                    </div>
+                    <div>
+                        <h3>Immediate Medical Emergency?</h3>
+                        <p>When to seek emergency room (ER) care immediately</p>
+                    </div>
+                    <button class="modal-close" id="closeEmergencyModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="emergency-callout">
+                        <i class="fa-solid fa-phone-volume"></i>
+                        <div>
+                            <strong>Call 911 / 999 / Local Emergency Services Immediately</strong>
+                            <p>Do NOT wait for a chatbot response if you or someone else experiences severe symptoms.</p>
+                        </div>
+                    </div>
+                    <ul class="emergency-list">
+                        <li><i class="fa-solid fa-circle-exclamation"></i> <strong>Chest pain, severe pressure,</strong> or pain radiating to jaw or left arm</li>
+                        <li><i class="fa-solid fa-circle-exclamation"></i> <strong>Severe difficulty breathing,</strong> choking, or wheezing</li>
+                        <li><i class="fa-solid fa-circle-exclamation"></i> <strong>Signs of stroke:</strong> Facial drooping, arm weakness, slurred speech (F.A.S.T.)</li>
+                        <li><i class="fa-solid fa-circle-exclamation"></i> <strong>Severe allergic reaction (Anaphylaxis):</strong> Swelling of lips, tongue, or throat</li>
+                        <li><i class="fa-solid fa-circle-exclamation"></i> <strong>Unconsciousness,</strong> fainting, or sudden unresponsiveness</li>
+                        <li><i class="fa-solid fa-circle-exclamation"></i> <strong>Poisoning or drug overdose:</strong> Contact National Poison Control immediately</li>
+                        <li><i class="fa-solid fa-circle-exclamation"></i> <strong>Uncontrolled profuse bleeding</strong></li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-primary-sm" id="ackEmergencyBtn">Understood & Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CHAT CONTAINER -->
+        <main class="chat-main" id="chatScrollArea">
+            <!-- WELCOME SCREEN -->
+            <div id="welcomeScreen" class="welcome-screen">
+                <div class="welcome-emblem">
+                    <div class="emblem-inner">
+                        <i class="fa-solid fa-staff-snake"></i>
+                    </div>
+                    <div class="emblem-ring"></div>
+                </div>
+
+                <h2>Welcome to <span class="accent-gradient">MediCare AI</span></h2>
+                <p class="welcome-desc">
+                    Your personal clinical pharmacy companion for medicine usage, dosage guidelines, interactions, and safe healthcare advice.
+                </p>
+
+                <div class="safety-banner">
+                    <i class="fa-solid fa-shield-heart"></i>
+                    <span><strong>Pharmacist Notice:</strong> This assistant provides verified educational insights. Never alter prescription medications without consulting your doctor.</span>
+                </div>
+
+                <!-- QUICK TOPIC TABS -->
+                <div class="topics-header">
+                    <span><i class="fa-solid fa-wand-magic-sparkles"></i> Popular Pharmacy Questions</span>
+                </div>
+
+                <div class="quick-prompts-grid">
+                    <button class="prompt-chip" data-prompt="What is the difference between Paracetamol and Ibuprofen, and which is safer for a stomach ulcer?">
+                        <div class="chip-icon-box">💊</div>
+                        <div class="chip-text">
+                            <strong>Paracetamol vs Ibuprofen</strong>
+                            <span>Differences, safe usage & stomach precautions</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right chip-arrow"></i>
+                    </button>
+
+                    <button class="prompt-chip" data-prompt="What are the essential rules for taking antibiotics, and what should I do if I missed a dose?">
+                        <div class="chip-icon-box">🦠</div>
+                        <div class="chip-text">
+                            <strong>Antibiotic Course Rules</strong>
+                            <span>Full course completion & missed dose guide</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right chip-arrow"></i>
+                    </button>
+
+                    <button class="prompt-chip" data-prompt="What are the common side effects of Metformin and why should it be taken with food?">
+                        <div class="chip-icon-box">🩺</div>
+                        <div class="chip-text">
+                            <strong>Metformin Side Effects</strong>
+                            <span>Meal timing, gastrointestinal tolerance & tips</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right chip-arrow"></i>
+                    </button>
+
+                    <button class="prompt-chip" data-prompt="Can I safely take Vitamin D and Multivitamins with my blood pressure medications?">
+                        <div class="chip-icon-box">🌿</div>
+                        <div class="chip-text">
+                            <strong>Supplement Interactions</strong>
+                            <span>Vitamins compatibility with prescribed drugs</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right chip-arrow"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CHAT MESSAGES STREAM -->
+            <div id="messagesContainer" class="messages-container"></div>
+
+            <!-- TYPING / STREAMING INDICATOR -->
+            <div id="typingIndicator" class="typing-bubble hidden">
+                <div class="typing-pharmacist-icon">
+                    <i class="fa-solid fa-user-doctor"></i>
+                </div>
+                <div class="typing-content">
+                    <span class="typing-label">MediCare is reviewing pharmacology database</span>
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- INPUT DOCK -->
+        <footer class="chat-input-dock">
+            <!-- Quick Chips Carousel -->
+            <div class="quick-tags-bar">
+                <button class="quick-tag" data-tag="Dosage concepts for children vs adults">👶 Child vs Adult Dosage</button>
+                <button class="quick-tag" data-tag="Which medicines must be taken after food?">🍽️ Taken with Food</button>
+                <button class="quick-tag" data-tag="What should I do if I miss a daily medication dose?">⏰ Missed Dose</button>
+                <button class="quick-tag" data-tag="What are the signs of a drug allergy?">⚠️ Drug Allergy Signs</button>
+            </div>
+
+            <div class="input-form-container">
+                <div class="input-wrapper">
+                    <div class="input-prefix-icon">
+                        <i class="fa-solid fa-capsules"></i>
+                    </div>
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="Ask about a medicine, symptom, interaction, or dosage..." 
+                        rows="1" 
+                        maxlength="1500"
+                    ></textarea>
+                    
+                    <div class="input-controls">
+                        <button id="voiceBtn" class="control-btn" title="Voice Input (Speech-to-Text)" type="button">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                        <button id="sendBtn" class="btn-send" title="Send message (Enter)" type="button" disabled>
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dock-meta-row">
+                    <span class="dock-disclaimer">
+                        <i class="fa-solid fa-circle-info"></i> MediCare AI offers informational guidance. Always consult a licensed physician or pharmacist.
+                    </span>
+                    <span class="model-tag">
+                        <i class="fa-solid fa-bolt"></i> {{ model_name }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- CREATOR FOOTER BAR (REQUESTED SPECIFICATION) -->
+            <div class="creator-footer">
+                <div class="creator-badge-card">
+                    <span class="creator-label">Crafted by</span>
+                    <a href="{{ author_url }}" target="_blank" rel="noopener noreferrer" class="creator-profile-link" title="Visit Developer Portfolio">
+                        <div class="avatar-ring">
+                            <img 
+                                src="{{ author_img }}" 
+                                alt="{{ author_name }}" 
+                                class="creator-avatar"
+                                onerror="this.style.display='none'"
+                            >
+                            <span class="verified-badge" title="Verified Creator"><i class="fa-solid fa-check"></i></span>
+                        </div>
+                        <span class="creator-name">{{ author_name }}</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square creator-link-icon"></i>
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{% static 'js/chat.js' %}"></script>
+</body>
+</html>
